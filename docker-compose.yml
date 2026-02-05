@@ -1,0 +1,82 @@
+services:
+  claude-code-free:
+    build:
+      context: ./claude-code-free
+      dockerfile: ../Dockerfile.claude-code-free
+    container_name: claude-code-free
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      # NVIDIA NIM API Key (required) - get from https://build.nvidia.com/settings/api-keys
+      - NVIDIA_NIM_API_KEY=
+      # Model selection
+      - MODEL=moonshotai/kimi-k2-thinking
+      # NVIDIA NIM settings
+      - NVIDIA_NIM_MAX_TOKENS=81920
+      - NVIDIA_NIM_TEMPERATURE=1.0
+      - NVIDIA_NIM_TOP_P=1.0
+      - NVIDIA_NIM_TOP_K=-1
+      - NVIDIA_NIM_RATE_LIMIT=40
+      - NVIDIA_NIM_RATE_WINDOW=60
+      - NVIDIA_NIM_REASONING_EFFORT=high
+      - NVIDIA_NIM_INCLUDE_REASONING=true
+      - NVIDIA_NIM_PRESENCE_PENALTY=0.0
+      - NVIDIA_NIM_FREQUENCY_PENALTY=0.0
+      - NVIDIA_NIM_MIN_P=0.0
+      - NVIDIA_NIM_REPETITION_PENALTY=1.0
+      - NVIDIA_NIM_PARALLEL_TOOL_CALLS=true
+      # Agent config
+      - CLAUDE_WORKSPACE=./agent_workspace
+      - MAX_CLI_SESSIONS=10
+      - ALLOWED_DIR=
+      - FAST_PREFIX_DETECTION=true
+      - ENABLE_NETWORK_PROBE_MOCK=true
+      - ENABLE_TITLE_GENERATION_SKIP=true
+      - ENABLE_SUGGESTION_MODE_SKIP=true
+      - ENABLE_FILEPATH_EXTRACTION_MOCK=true
+      # Telegram (optional)
+      - TELEGRAM_BOT_TOKEN=
+      - ALLOWED_TELEGRAM_USER_ID=
+      - MESSAGING_RATE_LIMIT=1
+      - MESSAGING_RATE_WINDOW=1
+    volumes:
+      - claude-code-free-workspace:/app/agent_workspace
+
+  openclaw:
+    build: ./openclaw
+    container_name: openclaw
+    restart: unless-stopped
+    depends_on:
+      - claude-code-free
+    ports:
+      - "18789:18789"
+      - "18790:18790"
+    environment:
+      - HOME=/home/node
+      - TERM=xterm-256color
+      # API key passed to openclaw config (can be any non-empty value for the proxy)
+      - ANTHROPIC_API_KEY=sk-placeholder
+      # Gateway access token - change this to secure your gateway
+      - OPENCLAW_GATEWAY_TOKEN=changeme
+      # Optional: password auth instead of token
+      - OPENCLAW_GATEWAY_PASSWORD=
+    volumes:
+      - ./openclaw-config:/home/node/.openclaw
+      - openclaw-workspace:/home/node/.openclaw/workspace
+    init: true
+    command:
+      [
+        "node",
+        "dist/index.js",
+        "gateway",
+        "--allow-unconfigured",
+        "--bind",
+        "lan",
+        "--port",
+        "18789",
+      ]
+
+volumes:
+  claude-code-free-workspace:
+  openclaw-workspace:
