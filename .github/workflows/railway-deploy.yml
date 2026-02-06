@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
   flatten-submodules:
     runs-on: ubuntu-latest
