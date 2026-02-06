@@ -32,8 +32,16 @@ ENV RAILWAY_RUN_UID=0
 ENV RAD_HOME=/home/radicle/.radicle
 ENV RAD_ALIAS=seed
 ENV RAD_PASSPHRASE=
-ENV RAD_SEED_POLICY=allow
-ENV RAD_SEED_SCOPE=all
+# Seeding policy: "block" (selective) or "allow" (permissive)
+ENV RAD_SEED_POLICY=block
+# Scope for permissive mode: "all" or "followed"
+ENV RAD_SEED_SCOPE=followed
+# Comma-separated repo IDs to seed (for selective mode)
+# Example: rad:z3gqcJUoA1n9HaHKufZs5FCSGazv5,rad:z9DV738hJpCa6aQXqvQC4SjaZvsi
+ENV RAD_SEED_REPOS=
+# Comma-separated repo IDs to block (for permissive mode)
+ENV RAD_BLOCK_REPOS=
+# External address for P2P connections (auto-set by Railway if public domain configured)
 ENV RAD_EXTERNAL_ADDRESS=
 
 EXPOSE 8776 8080
