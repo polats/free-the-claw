@@ -67,7 +67,7 @@ See [`Claude Code Free`](claude-code-free/README.md) to add more models.
 
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/free-the-claw)
 
-For persistent hosting, deploy on [Railway](https://railway.com) with two services from this repo. You will probably need the Hobby Plan ($5/month) as the free tier may not be enough for the image size.
+For persistent hosting, deploy on [Railway](https://railway.com) with two services from this repo. You will probably need the Hobby Plan ($5/month) as the free tier may not have enough memory for openclaw.
 
 1. Click the **Deploy on Railway** badge above
 2. Add your NVIDIA NIM API key from https://build.nvidia.com/settings/api-keys in the openclaw service's variables
