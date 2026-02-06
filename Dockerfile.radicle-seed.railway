@@ -29,6 +29,11 @@ RUN mkdir -p /home/radicle/.radicle && chown -R radicle:radicle /home/radicle
 
 # Run as root so entrypoint can write to Railway volume (mounts as root)
 ENV RAD_HOME=/home/radicle/.radicle
+ENV RAD_ALIAS=seed
+ENV RAD_PASSPHRASE=
+ENV RAD_SEED_POLICY=allow
+ENV RAD_SEED_SCOPE=all
+ENV RAD_EXTERNAL_ADDRESS=
 
 EXPOSE 8776 8080
 
