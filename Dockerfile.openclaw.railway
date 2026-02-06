@@ -29,4 +29,5 @@ RUN chown -R node:node /app
 
 # Run as root so entrypoint.sh can chown /home/node/.openclaw (matches docker-compose user: "root")
 ENTRYPOINT ["/bin/sh", "/openclaw-config/entrypoint.sh"]
-CMD ["node", "dist/index.js", "gateway", "--allow-unconfigured", "--bind", "lan", "--port", "18789"]
+# Railway sets PORT env var for public networking; default to 18789 for other environments
+CMD ["sh", "-c", "node dist/index.js gateway --allow-unconfigured --bind lan --port ${PORT:-18789}"]

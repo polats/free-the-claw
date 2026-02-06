@@ -82,7 +82,7 @@ The Codespace uses the same `docker-compose.yml` as local development with a thi
 For persistent hosting, deploy on [Railway](https://railway.com) with two services from this repo.
 
 1. Click the **Deploy on Railway** badge above, or create a new project manually
-2. Add two services, both pointing to this repo:
+2. Add two services, both pointing to the **`deploy` branch** of this repo (a GitHub Action auto-flattens submodules into this branch on every push to main):
 
    **claude-code-free**
    - Dockerfile path: `Dockerfile.claude-code-free.railway`
