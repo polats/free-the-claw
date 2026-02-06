@@ -24,15 +24,18 @@ COPY radicle-explorer-config/nginx-railway.conf.template /etc/nginx/templates/de
 RUN sed -i 's/\r$//' /entrypoint.sh /etc/nginx/conf.d/default.conf /etc/nginx/templates/default.conf.template \
     && chmod +x /entrypoint.sh
 
-# Defaults for Railway (EXPLORER_PREFERRED_SEED set via Railway reference variable)
+# Defaults for Railway
 ENV EXPLORER_PREFERRED_SEED_PORT=443
 ENV EXPLORER_PREFERRED_SEED_SCHEME=https
 ENV EXPLORER_HTTPD_PORT=443
 ENV EXPLORER_LOCAL_HTTPD_PORT=8080
 ENV EXPLORER_HTTPD_SCHEME=https
+# Internal seed connection (overridden by Railway reference variable)
+ENV SEED_INTERNAL_HOST=radicle-seed
+ENV SEED_INTERNAL_PORT=8080
 
 EXPOSE 80
 
 ENTRYPOINT ["/entrypoint.sh"]
-# Railway sets PORT; nginx must listen on it
-CMD ["sh", "-c", "envsubst '$PORT' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
+# Railway sets PORT; nginx must listen on it. envsubst replaces only listed vars (preserves nginx $uri etc.)
+CMD ["sh", "-c", "envsubst '$PORT $SEED_INTERNAL_HOST $SEED_INTERNAL_PORT' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]

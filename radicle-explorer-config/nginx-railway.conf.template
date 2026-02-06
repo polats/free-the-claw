@@ -13,4 +13,13 @@ server {
     location = /config.json {
         root /usr/share/nginx/html;
     }
+
+    # Reverse proxy seed API via private networking (avoids egress fees)
+    location /api/ {
+        proxy_pass http://${SEED_INTERNAL_HOST}:${SEED_INTERNAL_PORT}/api/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
 }
