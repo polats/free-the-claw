@@ -1,0 +1,10 @@
+services:
+  claude-code-free:
+    environment:
+      - NVIDIA_NIM_API_KEY=${NVIDIA_NIM_API_KEY}
+
+  openclaw:
+    volumes:
+      - ..:/workspace:cached
+    environment:
+      - NVIDIA_NIM_API_KEY=${NVIDIA_NIM_API_KEY}

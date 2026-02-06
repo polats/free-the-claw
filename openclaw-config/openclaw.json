@@ -3,7 +3,7 @@
     "mode": "merge",
     "providers": {
       "claude-code-free": {
-        "baseUrl": "http://claude-code-free:8082",
+        "baseUrl": "__PROXY_URL__",
         "apiKey": "${ANTHROPIC_API_KEY}",
         "api": "anthropic-messages",
         "models": [

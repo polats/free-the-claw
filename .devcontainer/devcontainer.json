@@ -1,0 +1,23 @@
+{
+  "name": "free-the-claw",
+  "dockerComposeFile": [
+    "../docker-compose.yml",
+    "docker-compose.devcontainer.yml"
+  ],
+  "service": "openclaw",
+  "workspaceFolder": "/workspace",
+  "forwardPorts": [18789],
+  "portsAttributes": {
+    "18789": {
+      "label": "OpenClaw Gateway",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "initializeCommand": "git submodule update --init --recursive",
+  "postCreateCommand": "if [ ! -f .env ]; then cp .env.example .env; fi",
+  "secrets": {
+    "NVIDIA_NIM_API_KEY": {
+      "description": "NVIDIA NIM API key from https://build.nvidia.com/settings/api-keys"
+    }
+  }
+}

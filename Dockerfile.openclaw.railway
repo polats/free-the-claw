@@ -1,0 +1,32 @@
+FROM node:22-bookworm
+
+# Install Bun (required for build scripts)
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/root/.bun/bin:${PATH}"
+
+RUN corepack enable
+
+WORKDIR /app
+
+COPY openclaw/package.json openclaw/pnpm-lock.yaml openclaw/pnpm-workspace.yaml openclaw/.npmrc ./
+COPY openclaw/ui/package.json ./ui/package.json
+COPY openclaw/patches ./patches
+COPY openclaw/scripts ./scripts
+
+RUN pnpm install --frozen-lockfile
+
+COPY openclaw/ .
+RUN OPENCLAW_A2UI_SKIP_MISSING=1 pnpm build
+ENV OPENCLAW_PREFER_PNPM=1
+RUN pnpm ui:build
+
+# Bake config into the image (no bind mount on Railway)
+COPY openclaw-config /openclaw-config
+
+ENV NODE_ENV=production
+
+RUN chown -R node:node /app
+
+# Run as root so entrypoint.sh can chown /home/node/.openclaw (matches docker-compose user: "root")
+ENTRYPOINT ["/bin/sh", "/openclaw-config/entrypoint.sh"]
+CMD ["node", "dist/index.js", "gateway", "--allow-unconfigured", "--bind", "lan", "--port", "18789"]
