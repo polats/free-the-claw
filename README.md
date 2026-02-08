@@ -74,18 +74,15 @@ For persistent hosting, deploy on [Railway](https://railway.com) with two servic
 3. Once deployed, you should see the gateway URL on the service (similar to `https://openclaw-railway-1234567890.up.railway.app`) 
 4. Visit the URL via the browser appended with `?token=changeme` (you can change this OPENCLAW_GATEWAY_TOKEN in the openclaw service's environment variables)
 
-## Agent Persona (optional)
+## GitHub Integration (optional)
 
-Give your agent a personality by loading a [SOUL.md](https://github.com/urtimus-prime/soul.md) file at startup. Add one of the following to your `.env`:
+Connect your GitHub account by adding a [Personal Access Token](https://github.com/settings/tokens) to your `.env`:
 
-**From a GitHub profile README** (the `username/username` repo):
 ```
-GITHUB_SOUL_USER=voxxelle
-```
-
-**From any URL** (raw markdown file):
-```
-SOUL_URL=https://raw.githubusercontent.com/your-org/your-repo/main/SOUL.md
+GITHUB_PAT_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-If both are set, `GITHUB_SOUL_USER` takes priority. The file is fetched on every container start and written to the agent's workspace as `SOUL.md`, which openclaw automatically injects into the agent's system prompt.
+This does two things:
+
+1. **Agent persona** — auto-detects your GitHub username and fetches your profile README (the `username/username` repo) as a [SOUL.md](https://github.com/urtimus-prime/soul.md), which openclaw injects into the agent's system prompt
+2. **Git operations** — configures git credentials and `gh` CLI so the agent can clone, push, pull, and interact with your repos

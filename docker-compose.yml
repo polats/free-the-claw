@@ -63,9 +63,8 @@ services:
       - OPENCLAW_GATEWAY_TOKEN=changeme
       # Optional: password auth instead of token
       - OPENCLAW_GATEWAY_PASSWORD=
-      # Agent persona: set ONE of these to load a SOUL.md at startup
-      - GITHUB_SOUL_USER=${GITHUB_SOUL_USER}
-      - SOUL_URL=${SOUL_URL}
+      # GitHub PAT: enables agent persona (SOUL.md) + git operations
+      - GITHUB_PAT_TOKEN=${GITHUB_PAT_TOKEN}
     user: "root"
     volumes:
       - ./openclaw-config:/openclaw-config:ro
