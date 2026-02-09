@@ -4,6 +4,7 @@ openclaw-config/canvas/
 openclaw-config/cron/
 openclaw-config/devices/
 openclaw-config/update-check.json
+openclaw-config/workspace/
 
 # Environment (contains API keys)
 .env
