@@ -53,6 +53,7 @@ COPY --from=builder /app/.npmrc ./.npmrc
 COPY --from=builder /app/extensions ./extensions
 COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/patches ./patches
+COPY --from=builder /app/docs ./docs
 
 # Bake config into the image (no bind mount on Railway)
 COPY --from=source /src/openclaw-config /openclaw-config
