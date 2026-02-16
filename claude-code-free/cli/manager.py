@@ -1,0 +1,166 @@
+"""
+CLI Session Manager for Multi-Instance Claude CLI Support
+
+Manages a pool of CLISession instances, each handling one conversation.
+This enables true parallel processing where multiple conversations run
+simultaneously in separate CLI processes.
+"""
+
+import asyncio
+import uuid
+import logging
+from typing import Dict, Optional, Tuple, List
+
+from .session import CLISession
+
+logger = logging.getLogger(__name__)
+
+
+class CLISessionManager:
+    """
+    Manages multiple CLISession instances for parallel conversation processing.
+
+    Each new conversation gets its own CLISession with its own subprocess.
+    Replies to existing conversations reuse the same CLISession instance.
+    """
+
+    def __init__(
+        self,
+        workspace_path: str,
+        api_url: str,
+        allowed_dirs: Optional[List[str]] = None,
+        max_sessions: int = 10,
+    ):
+        """
+        Initialize the session manager.
+
+        Args:
+            workspace_path: Working directory for CLI processes
+            api_url: API URL for the proxy
+            allowed_dirs: Directories the CLI is allowed to access
+            max_sessions: Maximum concurrent sessions
+        """
+        self.workspace = workspace_path
+        self.api_url = api_url
+        self.allowed_dirs = allowed_dirs or []
+        self.max_sessions = max_sessions
+
+        self._sessions: Dict[str, CLISession] = {}
+        self._pending_sessions: Dict[str, CLISession] = {}
+        self._temp_to_real: Dict[str, str] = {}
+        self._lock = asyncio.Lock()
+
+        logger.info(f"CLISessionManager initialized (max_sessions={max_sessions})")
+
+    async def get_or_create_session(
+        self, session_id: Optional[str] = None
+    ) -> Tuple[CLISession, str, bool]:
+        """
+        Get an existing session or create a new one.
+
+        Returns:
+            Tuple of (CLISession instance, session_id, is_new_session)
+        """
+        async with self._lock:
+            if session_id:
+                lookup_id = self._temp_to_real.get(session_id, session_id)
+
+                if lookup_id in self._sessions:
+                    return self._sessions[lookup_id], lookup_id, False
+                if lookup_id in self._pending_sessions:
+                    return self._pending_sessions[lookup_id], lookup_id, False
+
+            total_sessions = len(self._sessions) + len(self._pending_sessions)
+            if total_sessions >= self.max_sessions:
+                await self._cleanup_idle_sessions_unlocked()
+                total_sessions = len(self._sessions) + len(self._pending_sessions)
+                if total_sessions >= self.max_sessions:
+                    raise RuntimeError(
+                        f"Maximum concurrent sessions ({self.max_sessions}) reached."
+                    )
+
+            temp_id = session_id if session_id else f"pending_{uuid.uuid4().hex[:8]}"
+
+            new_session = CLISession(
+                workspace_path=self.workspace,
+                api_url=self.api_url,
+                allowed_dirs=self.allowed_dirs,
+            )
+            self._pending_sessions[temp_id] = new_session
+            logger.info(f"Created new session: {temp_id}")
+
+            return new_session, temp_id, True
+
+    async def register_real_session_id(
+        self, temp_id: str, real_session_id: str
+    ) -> bool:
+        """Register the real session ID from CLI output."""
+        async with self._lock:
+            if temp_id not in self._pending_sessions:
+                logger.warning(f"Temp session {temp_id} not found")
+                return False
+
+            session = self._pending_sessions.pop(temp_id)
+            self._sessions[real_session_id] = session
+            self._temp_to_real[temp_id] = real_session_id
+
+            logger.info(f"Registered session: {temp_id} -> {real_session_id}")
+            return True
+
+    async def get_real_session_id(self, temp_id: str) -> Optional[str]:
+        """Get the real session ID for a temporary ID."""
+        async with self._lock:
+            return self._temp_to_real.get(temp_id)
+
+    async def remove_session(self, session_id: str) -> bool:
+        """Remove a session from the manager."""
+        async with self._lock:
+            if session_id in self._pending_sessions:
+                session = self._pending_sessions.pop(session_id)
+                await session.stop()
+                return True
+
+            if session_id in self._sessions:
+                session = self._sessions.pop(session_id)
+                await session.stop()
+                for temp, real in list(self._temp_to_real.items()):
+                    if real == session_id:
+                        del self._temp_to_real[temp]
+                return True
+
+            return False
+
+    async def _cleanup_idle_sessions_unlocked(self):
+        """Clean up idle sessions (must hold lock)."""
+        idle = [sid for sid, s in self._sessions.items() if not s.is_busy]
+
+        for sid in idle[:3]:
+            session = self._sessions.pop(sid)
+            await session.stop()
+            logger.debug(f"Cleaned up idle session: {sid}")
+
+    async def stop_all(self):
+        """Stop all sessions."""
+        async with self._lock:
+            all_sessions = list(self._sessions.values()) + list(
+                self._pending_sessions.values()
+            )
+            for session in all_sessions:
+                try:
+                    await session.stop()
+                except Exception as e:
+                    logger.error(f"Error stopping session: {e}")
+
+            self._sessions.clear()
+            self._pending_sessions.clear()
+            self._temp_to_real.clear()
+            logger.info("All sessions stopped")
+
+    def get_stats(self) -> Dict:
+        """Get session statistics."""
+        return {
+            "active_sessions": len(self._sessions),
+            "pending_sessions": len(self._pending_sessions),
+            "max_sessions": self.max_sessions,
+            "busy_count": sum(1 for s in self._sessions.values() if s.is_busy),
+        }
