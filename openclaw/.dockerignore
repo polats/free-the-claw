@@ -1,54 +1,129 @@
+# Git & Version Control
 .git
-.worktrees
-.bun-cache
+.gitignore
+.github
+.gitattributes
+.gitmodules
+
+# Build & Development
 .bun
+.bun-cache
+.turbo
+.cache
+.next
+.pnpm-store
+.npm
+.yarn
+pnpm-store
+node_modules
+**/node_modules
+dist
+**/dist
+build
+**/build
+coverage
+**/coverage
 .tmp
-**/.tmp
+**/tmp
+tmp
+
+# Source Code (not needed in runtime)
+src
+**/src
+scripts
+**/scripts
+test
+**/test
+__tests__
+**/__tests__
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+*.test.tsx
+*.spec.tsx
+
+# Configuration & Metadata
+tsconfig.json
+**/tsconfig.json
+webpack.config.js
+vitest.config.ts
+jest.config.js
+.eslintrc*
+.prettierrc*
+.editorconfig
+.swiftformat
+.swiftlint.yml
+knip.config.ts
+.mocharc*
+.nycrc*
+.babelrc*
+rollup.config.js
+vite.config.ts
+next.config.js
+nuxt.config.ts
+
+# Documentation
+README*
+CHANGELOG*
+LICENSE*
+docs
+**/docs
+examples
+**/examples
+*.md
+**/*.md
+**/*.mdx
+
+# OS & Editor Files
 .DS_Store
 **/.DS_Store
+Thumbs.db
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.env
+.env.local
+.env.*.local
+
+# Logs & Artifacts
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+.artifacts
+**/.artifacts
+.nyc_output
+
+# Media Files
 *.png
 *.jpg
 *.jpeg
-*.webp
 *.gif
+*.webp
 *.mp4
 *.mov
 *.wav
 *.mp3
-node_modules
-**/node_modules
-.pnpm-store
-**/.pnpm-store
-.turbo
-**/.turbo
-.cache
-**/.cache
-.next
-**/.next
-coverage
-**/coverage
-*.log
-tmp
-**/tmp
 
-# build artifacts
-dist
-**/dist
-apps/macos/.build
-apps/ios/build
-**/*.trace
-
-# large app trees not needed for CLI build
+# Large app trees not needed for CLI build
 apps/
 assets/
 Peekaboo/
 Swabble/
 Core/
 Users/
-vendor/
 
-# Needed for building the Canvas A2UI bundle during Docker image builds.
-# Keep the rest of apps/ and vendor/ excluded to avoid a large build context.
+# Vendor exclusions (except A2UI which is needed)
+vendor/
+!vendor/a2ui/
+!vendor/a2ui/renderers/
+!vendor/a2ui/renderers/lit/
+!vendor/a2ui/renderers/lit/**
+
+# Keep only essential shared resources
 !apps/shared/
 !apps/shared/OpenClawKit/
 !apps/shared/OpenClawKit/Sources/
@@ -58,7 +133,3 @@ vendor/
 !apps/shared/OpenClawKit/Tools/
 !apps/shared/OpenClawKit/Tools/CanvasA2UI/
 !apps/shared/OpenClawKit/Tools/CanvasA2UI/**
-!vendor/a2ui/
-!vendor/a2ui/renderers/
-!vendor/a2ui/renderers/lit/
-!vendor/a2ui/renderers/lit/**
